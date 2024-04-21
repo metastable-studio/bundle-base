@@ -13,32 +13,20 @@ jobs:
         build:
           - arch: 'x64'
             type: 'cuda'
-            uv_args: ''
+            pip_args: ''
           - arch: 'x64'
             type: 'cpu'
-            uv_args: '--prerelease=allow'
+            pip_args: '--pre'
           - arch: 'x64'
             type: 'rocm'
-            uv_args: '--prerelease=allow'
+            pip_args: '--pre'
     runs-on: ubuntu-latest
     env:
       artifact_name: linux-${{ matrix.build.arch }}-${{ matrix.build.type }}.tar.zst
       python_url: 'https://github.com/indygreg/python-build-standalone/releases/download/20240415/cpython-3.11.9+20240415-x86_64_v3-unknown-linux-gnu-install_only.tar.gz'
-      uv_url: 'https://github.com/astral-sh/uv/releases/download/0.1.35/uv-x86_64-unknown-linux-gnu.tar.gz'
-      requirements: requirements.${{ matrix.build.type }}.txt ${{ matrix.build.uv_args }}
+      pip_args: ${{ matrix.build.pip_args }} -r requirements.${{ matrix.build.type }}.txt
     steps:
       - uses: actions/checkout@v4
-
-      - name: Cache UV Download
-        uses: actions/cache@v4
-        id: cache-uv
-        with:
-          path: uv
-          key: ${{ runner.os }}-uv
-
-      - name: Download UV
-        if: steps.cache-uv.outputs.cache-hit != 'true'
-        run: curl -L -o uv.tar.gz ${{ env.uv_url }} && tar --strip-components=1 -xzf uv.tar.gz && rm uv.tar.gz
 
       - name: Cache Python Download
         id: cache-python
@@ -51,18 +39,18 @@ jobs:
         if: steps.cache-python.outputs.cache-hit != 'true'
         run: curl -L -o python.tar.gz ${{ env.python_url }}
 
-      - name: Cache UV Packages
+      - name: Cache Pip Packages
         uses: actions/cache@v4
-        id: cache-uv-packages
+        id: cache-pip-packages
         with:
-          path: ~/.cache/uv
-          key: ${{ runner.os }}-${{ matrix.build.type }}-packages
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-${{ matrix.build.type }}-pip-packages
 
       - name: Extract Python
         run: tar -xzf python.tar.gz
 
       - name: Install packages
-        run: ./uv pip install -r ${{ env.requirements }} --python ./python/bin/python
+        run: ./python/bin/python -m pip install ${{ env.pip_args }}
 
       - name: Build artifact
         run: tar -I"zstd -9 -T0" -cf /tmp/${{ env.artifact_name }} python
@@ -81,32 +69,20 @@ jobs:
         build:
           - arch: 'x64'
             type: 'cuda'
-            uv_args: ''
+            pip_args: ''
           - arch: 'x64'
             type: 'directml'
-            uv_args: '--prerelease=allow'
+            pip_args: '--pre'
           - arch: 'x64'
             type: 'cpu'
-            uv_args: '--prerelease=allow'
+            pip_args: '--pre'
     runs-on: windows-latest
     env:
       artifact_name: win32-${{ matrix.build.arch }}-${{ matrix.build.type }}.tar.zst
       python_url: 'https://github.com/indygreg/python-build-standalone/releases/download/20240415/cpython-3.11.9+20240415-x86_64-pc-windows-msvc-install_only.tar.gz'
-      uv_url: 'https://github.com/astral-sh/uv/releases/download/0.1.35/uv-x86_64-pc-windows-msvc.zip'
-      requirements: requirements.${{ matrix.build.type }}.txt ${{ matrix.build.uv_args }}
+      pip_args: ${{ matrix.build.pip_args }} -r requirements.${{ matrix.build.type }}.txt
     steps:
       - uses: actions/checkout@v4
-
-      - name: Cache UV Download
-        uses: actions/cache@v4
-        id: cache-uv
-        with:
-          path: uv.exe
-          key: ${{ runner.os }}-uv
-
-      - name: Download UV
-        if: steps.cache-uv.outputs.cache-hit != 'true'
-        run: curl -L -o uv.zip ${{ env.uv_url }} && unzip uv.zip -d . && rm uv.zip
 
       - name: Cache Python Download
         id: cache-python
@@ -119,18 +95,18 @@ jobs:
         if: steps.cache-python.outputs.cache-hit != 'true'
         run: curl -L -o python.tar.gz ${{ env.python_url }}
 
-      - name: Cache UV Packages
+      - name: Cache Pip Packages
         uses: actions/cache@v4
-        id: cache-uv-packages
+        id: cache-pip-packages
         with:
-          path: ~\AppData\Local\uv\cache
-          key: ${{ runner.os }}-${{ matrix.build.type }}-packages
+          path: ~\AppData\Local\pip\cache
+          key: ${{ runner.os }}-${{ matrix.build.type }}-pip-packages
 
       - name: Extract Python
         run: tar -xzf python.tar.gz
 
       - name: Install packages
-        run: .\uv.exe pip install -r ${{ env.requirements }} --python .\python\python.exe
+        run: .\python\python.exe -m pip install ${{ env.pip_args }}
 
       - name: Build artifact
         run: cd python && tar -cf - * | zstd -9 -T0 > C:\WINDOWS\Temp\${{ env.artifact_name }}
@@ -153,12 +129,9 @@ jobs:
     env:
       artifact_name: darwin-${{ matrix.build.arch }}-${{ matrix.build.type }}.tar.zst
       python_url: 'https://github.com/indygreg/python-build-standalone/releases/download/20240415/cpython-3.11.9+20240415-aarch64-apple-darwin-install_only.tar.gz'
-      requirements: requirements.${{ matrix.build.type }}.txt
+      pip_args: -r requirements.${{ matrix.build.type }}.txt
     steps:
       - uses: actions/checkout@v4
-
-      - name: Install dependencies
-        run: brew update && brew install uv
 
       - name: Cache Python Download
         id: cache-python
@@ -171,18 +144,18 @@ jobs:
         if: steps.cache-python.outputs.cache-hit != 'true'
         run: curl -L -o python.tar.gz ${{ env.python_url }}
 
-      - name: Cache UV Packages
+      - name: Cache Pip Packages
         uses: actions/cache@v4
-        id: cache-uv-packages
+        id: cache-pip-packages
         with:
-          path: ~/.cache/uv
-          key: ${{ runner.os }}-${{ matrix.build.type }}-packages
+          path: ~/Library/Caches/pip
+          key: ${{ runner.os }}-${{ matrix.build.type }}-pip-packages
 
       - name: Extract Python
         run: tar -xzf python.tar.gz
 
       - name: Install packages
-        run: uv pip install -r ${{ env.requirements }} --python ./python/bin/python
+        run: ./python/bin/python -m pip install ${{ env.pip_args }}
 
       - name: Build artifact
         run: cd python && tar -cf - * | zstd -9 -T0 > /tmp/${{ env.artifact_name }}
@@ -205,12 +178,9 @@ jobs:
     env:
       artifact_name: darwin-${{ matrix.build.arch }}-${{ matrix.build.type }}.tar.zst
       python_url: 'https://github.com/indygreg/python-build-standalone/releases/download/20240415/cpython-3.11.9+20240415-x86_64-apple-darwin-install_only.tar.gz'
-      requirements: requirements.${{ matrix.build.type }}.txt
+      pip_args: -r requirements.${{ matrix.build.type }}.txt
     steps:
       - uses: actions/checkout@v4
-
-      - name: Install dependencies
-        run: brew update && brew install uv
 
       - name: Cache Python Download
         id: cache-python
@@ -223,18 +193,18 @@ jobs:
         if: steps.cache-python.outputs.cache-hit != 'true'
         run: curl -L -o python.tar.gz ${{ env.python_url }}
 
-      - name: Cache UV Packages
+      - name: Cache Pip Packages
         uses: actions/cache@v4
-        id: cache-uv-packages
+        id: cache-pip-packages
         with:
-          path: ~/.cache/uv
-          key: ${{ runner.os }}-${{ matrix.build.type }}-packages
+          path: ~/Library/Caches/pip
+          key: ${{ runner.os }}-${{ matrix.build.type }}-pip-packages
 
       - name: Extract Python
         run: tar -xzf python.tar.gz
 
       - name: Install packages
-        run: uv pip install -r ${{ env.requirements }} --python ./python/bin/python
+        run: ./python/bin/python -m pip install ${{ env.pip_args }}
 
       - name: Build artifact
         run: cd python && tar -cf - * | zstd -9 -T0 > /tmp/${{ env.artifact_name }}
