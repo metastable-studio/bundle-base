@@ -1,4 +1,3 @@
---pre
 -r requirements.txt
 torch-directml
 onnxruntime-directml
