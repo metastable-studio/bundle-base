@@ -53,7 +53,7 @@ jobs:
         run: ./python/bin/python -m pip install ${{ env.pip_args }}
 
       - name: Build artifact
-        run: tar -I"zstd -9 -T0" -cf /tmp/${{ env.artifact_name }} python
+        run: cd python && tar -cf - * | zstd -9 -T0 > /tmp/${{ env.artifact_name }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
