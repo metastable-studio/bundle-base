@@ -25,7 +25,7 @@ jobs:
       artifact_name: linux-${{ matrix.build.arch }}-${{ matrix.build.type }}.tar.zst
       python_url: 'https://github.com/indygreg/python-build-standalone/releases/download/20240415/cpython-3.11.9+20240415-x86_64_v3-unknown-linux-gnu-install_only.tar.gz'
       uv_url: 'https://github.com/astral-sh/uv/releases/download/0.1.35/uv-x86_64-unknown-linux-gnu.tar.gz'
-      requirements: ${{ matrix.build.uv_args }} requirements.${{ matrix.build.type }}.txt
+      requirements: requirements.${{ matrix.build.type }}.txt ${{ matrix.build.uv_args }}
     steps:
       - uses: actions/checkout@v4
 
@@ -93,7 +93,7 @@ jobs:
       artifact_name: win32-${{ matrix.build.arch }}-${{ matrix.build.type }}.tar.zst
       python_url: 'https://github.com/indygreg/python-build-standalone/releases/download/20240415/cpython-3.11.9+20240415-x86_64-pc-windows-msvc-install_only.tar.gz'
       uv_url: 'https://github.com/astral-sh/uv/releases/download/0.1.35/uv-x86_64-pc-windows-msvc.zip'
-      requirements: ${{ matrix.build.uv_args }} requirements.${{ matrix.build.type }}.txt
+      requirements: requirements.${{ matrix.build.type }}.txt ${{ matrix.build.uv_args }}
     steps:
       - uses: actions/checkout@v4
 
