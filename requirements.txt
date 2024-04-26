@@ -2,13 +2,9 @@ torchvision
 torchsde
 einops
 safetensors
-accelerate
 pyyaml
 Pillow
 scipy
 tqdm
 psutil
 transformers
-diffusers[torch]
-voluptuous
-onnx

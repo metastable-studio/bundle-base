@@ -2,4 +2,3 @@
 --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/
 -r requirements.txt
 torch
-onnxruntime-gpu
