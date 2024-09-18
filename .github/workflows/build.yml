@@ -19,7 +19,7 @@ jobs:
             pip_args: '--extra-index-url https://download.pytorch.org/whl/cpu'
           - arch: 'x64'
             type: 'rocm'
-            pip_args: '--pre'
+            pip_args: ''
     runs-on: ubuntu-latest
     env:
       artifact_name: linux-${{ matrix.build.arch }}-${{ matrix.build.type }}.tar.zst
@@ -70,9 +70,9 @@ jobs:
           - arch: 'x64'
             type: 'cuda'
             pip_args: ''
-          # - arch: 'x64'
-          #   type: 'directml'
-          #   pip_args: '--pre'
+          - arch: 'x64'
+            type: 'directml'
+            pip_args: '--pre'
           - arch: 'x64'
             type: 'cpu'
             pip_args: ''
