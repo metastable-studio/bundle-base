@@ -26,6 +26,17 @@ jobs:
       python_url: 'https://github.com/indygreg/python-build-standalone/releases/download/20240415/cpython-3.11.9+20240415-x86_64_v3-unknown-linux-gnu-install_only.tar.gz'
       pip_args: ${{ matrix.build.pip_args }} -r requirements.${{ matrix.build.type }}.txt
     steps:
+      - name: Maximize build space
+        uses: easimon/maximize-build-space@master
+        with:
+          root-reserve-mb: 512
+          swap-size-mb: 1024
+          remove-dotnet: 'true'
+          remove-android: 'true'
+          remove-android: 'true'
+          remove-codeql: 'true'
+          remove-docker-images: 'true'
+
       - uses: actions/checkout@v4
 
       - name: Cache Python Download
@@ -167,7 +178,7 @@ jobs:
         run: rm -rf python/lib/python3.11/site-packages/torch/include && rm -rf python/include && rm -rf python/share
 
       - name: Build artifact
-        run: cd python && tar -cf - * | zstd -9 -T0 > /tmp/${{ env.artifact_name }}
+        run: cd python && tar -cf - * | zstd -9 -T1 > /tmp/${{ env.artifact_name }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -219,7 +230,7 @@ jobs:
         run: rm -rf python/lib/python3.11/site-packages/torch/include && rm -rf python/include && rm -rf python/share
 
       - name: Build artifact
-        run: cd python && tar -cf - * | zstd -9 -T0 > /tmp/${{ env.artifact_name }}
+        run: cd python && tar -cf - * | zstd -9 -T1 > /tmp/${{ env.artifact_name }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
