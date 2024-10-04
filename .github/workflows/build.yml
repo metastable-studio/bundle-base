@@ -112,7 +112,7 @@ jobs:
         run: .\python\python.exe -m pip install --no-compile ${{ env.pip_args }}
 
       - name: Clean up
-        run: rm -rf python/Lib/site-packages/torch/include && rm -rf python/include && rm -rf python/share
+        run: rd /s /q python/Lib/site-packages/torch/include && rd /s /q python/include && rd /s /q python/share
 
       - name: Build artifact
         run: cd python && tar -cf - * | zstd -9 -T0 > C:\WINDOWS\Temp\${{ env.artifact_name }}
