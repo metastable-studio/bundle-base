@@ -26,9 +26,6 @@ jobs:
       python_url: 'https://github.com/indygreg/python-build-standalone/releases/download/20240415/cpython-3.11.9+20240415-x86_64_v3-unknown-linux-gnu-install_only.tar.gz'
       pip_args: ${{ matrix.build.pip_args }} -r requirements.${{ matrix.build.type }}.txt
     steps:
-      - name: Check disk space
-        run: df -h
-
       - name: Remove unnecessary files
         run: |
           sudo rm -rf \
@@ -37,17 +34,16 @@ jobs:
             /opt/microsoft/msedge \
             /opt/microsoft/powershell \
             /opt/pipx \
+            /opt/ghc \
+            /opt/hostedtoolcache/CodeQL \
             /usr/lib/mono \
             /usr/local/julia* \
             /usr/local/lib/android \
-            /usr/local/lib/node_modules \
             /usr/local/share/chromium \
             /usr/local/share/powershell \
             /usr/share/dotnet \
             /usr/share/swift
-
-      - name: Check disk space
-        run: df -h
+          sudo docker image prune --all --force
 
       - uses: actions/checkout@v4
 
@@ -76,7 +72,18 @@ jobs:
         run: ./python/bin/python -m pip install --no-compile ${{ env.pip_args }}
 
       - name: Clean up
-        run: rm -rf python/lib/python3.11/site-packages/torch/include && rm -rf python/include && rm -rf python/share
+        run: |
+          rm -rf python/lib/python3.11/site-packages/torch/test
+          rm -rf python/lib/python3.11/site-packages/torch/bin/test_*
+          rm -rf python/lib/python3.11/site-packages/torch/include
+          rm -rf python/include
+          rm -rf python/share
+          find python/ -type d -name "tests" -exec rm -rf {} +
+
+      - name: Strip (CUDA)
+        run: |
+          strip -s python/lib/python3.11/site-packages/triton/_C/libtriton.so
+        if: matrix.build.type == 'cuda'
 
       - name: Build artifact
         run: cd python && tar -cf - * | zstd -9 -T0 > /tmp/${{ env.artifact_name }}
@@ -135,7 +142,12 @@ jobs:
         run: .\python\python.exe -m pip install --no-compile ${{ env.pip_args }}
 
       - name: Clean up
-        run: rm -r -fo python/Lib/site-packages/torch/include && rm -r -fo python/include && rm -r -fo python/share
+        run: |
+          rm -r -fo python/Lib/site-packages/torch/include
+          rm -r -fo python/include
+          rm -r -fo python/share
+          Remove-Item 'python\*' -Recurse -Include *.pdb
+          Remove-Item 'python\*' -Recurse -Include *.lib
 
       - name: Build artifact
         run: cd python && tar -cf - * | zstd -9 -T0 > C:\WINDOWS\Temp\${{ env.artifact_name }}
@@ -187,7 +199,11 @@ jobs:
         run: ./python/bin/python -m pip install --no-compile ${{ env.pip_args }}
 
       - name: Clean up
-        run: rm -rf python/lib/python3.11/site-packages/torch/include && rm -rf python/include && rm -rf python/share
+        run: |
+          rm -rf python/lib/python3.11/site-packages/torch/include
+          rm -rf python/include
+          rm -rf python/share
+          find python/ -type d -name "tests" -exec rm -rf {} +
 
       - name: Build artifact
         run: cd python && tar -cf - * | zstd -9 -T1 > /tmp/${{ env.artifact_name }}
@@ -239,7 +255,11 @@ jobs:
         run: ./python/bin/python -m pip install --no-compile ${{ env.pip_args }}
 
       - name: Clean up
-        run: rm -rf python/lib/python3.11/site-packages/torch/include && rm -rf python/include && rm -rf python/share
+        run: |
+          rm -rf python/lib/python3.11/site-packages/torch/include
+          rm -rf python/include
+          rm -rf python/share
+          find python/ -type d -name "tests" -exec rm -rf {} +
 
       - name: Build artifact
         run: cd python && tar -cf - * | zstd -9 -T1 > /tmp/${{ env.artifact_name }}
